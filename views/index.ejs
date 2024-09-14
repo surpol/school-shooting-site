@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Shootings Data & Charts</title>
+
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js CDN for creating charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SQL.js CDN for in-browser database -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
+
+    <style>
+        /* Ensure the "Show Less" button floats right below the table */
+        #show-more-btn {
+            margin-top: 20px;
+            display: block;
+            position: relative;
+        }
+
+        #show-more-btn.sticky {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        /* Clean up layout spacing for desktop filters */
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap; /* Ensure the filters wrap neatly on smaller screens */
+        }
+
+        /* Layout the page into three columns */
+        .three-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr; /* Three columns */
+            gap: 2rem;
+        }
+
+        /* Modal button for small screens */
+        .filter-modal-button {
+            display: none;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .three-column-layout {
+                grid-template-columns: 1fr; /* Make it single column on small screens */
+            }
+
+            .filter-modal-button {
+                display: flex;
+                justify-content: flex-start;
+                margin-bottom: 1rem;
+            }
+
+            #filter-sort-controls {
+                display: none; /* Hide filters on mobile view */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-8 p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">School Shootings Data & Visual Patterns</h1>
+
+        <!-- Modal button for small screens -->
+        <div class="filter-modal-button">
+            <button id="filter-modal-btn" class="p-2 bg-blue-500 text-white rounded-md">Open Filters</button>
+        </div>
+
+        <!-- Modal for small screens -->
+        <div id="filter-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
+            <div class="bg-white p-4 rounded-md w-3/4">
+                <h2 class="text-xl font-bold mb-4">Filters</h2>
+                <div class="mb-4">
+                    <!-- Filter by Year in Modal -->
+                    <label for="modal-filter-year" class="block mb-2">Select Year:</label>
+                    <select id="modal-filter-year" class="border w-full">
+                        <option value="all">All Years</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <!-- Filter by State in Modal -->
+                    <label for="modal-filter-state" class="block mb-2">Select State:</label>
+                    <select id="modal-filter-state" class="border w-full">
+                        <option value="all">All States</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="modal-sort-deaths-checkbox" class="mr-2">
+                        <input type="checkbox" id="modal-sort-deaths-checkbox" class="mr-1">Sort by Death Count
+                    </label>
+		</div>
+		<div>
+                    <button id="modal-sort-date" class="border p-2 bg-blue-500 text-white">Sort by Date (Desc)</button>
+                </div>
+                <!-- Close Button -->
+                <div class="text-right mt-4">
+                    <button id="close-filter-modal" class="p-2 bg-red-500 text-white rounded-md">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Three-column layout: Filters, Table, Charts -->
+        <div class="three-column-layout">
+            <!-- First Column: Filters -->
+            <div id="filter-sort-controls" class="mb-6 filter-container md:block hidden">
+                <!-- Filter by Year -->
+                <div class="flex items-center gap-2">
+                    <label for="filter-year">Select Year:</label>
+                    <select id="filter-year" class="border p-1">
+                        <option value="all">All Years</option>
+                    </select>
+                </div>
+
+                <!-- Filter by State -->
+                <div class="mb-2 gap-2">
+                    <label for="filter-state">Select State:</label>
+                    <select id="filter-state" class="border p-1">
+                        <option value="all">All States</option>
+                    </select>
+                </div>
+
+                <!-- Sort Controls -->
+                <div class="mb-2 gap-2">
+                    <label for="sort-deaths-checkbox">
+                        <input type="checkbox" id="sort-deaths-checkbox" class="mr-1">Sort by Death Count
+                    </label>
+		</div>
+		<div class="mb-2 gap-2">
+                    <button id="sort-date" class="border p-1 bg-blue-500 text-white">Sort by Date (Desc)</button>
+                </div>
+            </div>
+
+            <!-- Second Column: Table -->
+            <div class="overflow-auto">
+                <h2 class="text-2xl font-semibold mb-4">School Shootings Data Table</h2>
+                <table class="table-auto w-full text-left bg-white border border-gray-200 shadow-md">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 border">Date</th>
+                            <th class="p-2 border">Location</th>
+                            <th class="p-2 border">Deaths</th>
+                            <th class="p-2 border">Injuries</th>
+                            <th class="p-2 border">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Rows will be dynamically populated -->
+                    </tbody>
+                </table>
+                <!-- Show More/Show Less Button -->
+                <div class="mt-4">
+                    <button id="show-more-btn" class="p-2 bg-blue-500 text-white rounded-md hidden">Show More</button>
+                </div>
+            </div>
+
+            <!-- Third Column: Charts -->
+            <div>
+                <!-- Line Chart for Deaths Over Time -->
+                <h2 class="text-2xl font-semibold mb-4 text-center">Deaths Over Time</h2>
+                <canvas id="deathsTrendChart"></canvas>
+
+                <!-- Bar Chart for Deaths by State -->
+                <h2 class="text-2xl font-semibold mt-6 mb-4 text-center">Deaths by State</h2>
+                <canvas id="deathsByStateChart"></canvas>
+
+                <!-- Google Trends Embedding -->
+                <h2 class="text-2xl font-semibold mt-6 mb-4 text-center">Related Google Search Trends</h2>
+                <div id="trends-widget-container"></div>
+                <script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/3826_RC01/embed_loader.js"></script> 
+                <script type="text/javascript"> 
+                    trends.embed.renderExploreWidget("RELATED_QUERIES", {
+                        "comparisonItem":[{"keyword":"School shooting","geo":"US","time":"now 7-d"}],
+                        "category":0,"property":""
+                    }, {
+                        "exploreQuery":"date=now%207-d&geo=US&q=School%20shooting&hl=en",
+                        "guestPath":"https://trends.google.com:443/trends/embed/"
+                    });
+                </script>
+            </div>
+        </div>
+
+        <!-- SQL.js and Chart.js Script to Populate the Table and Charts -->
+        <script>
+            // Load SQL.js and point to the correct path for sql-wasm.wasm
+            const config = {
+                locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${filename}`
+            };
+
+            initSqlJs(config).then(function(SQL){
+                // Create an in-browser database
+                const db = new SQL.Database();
+
+                // Create table schema
+                db.run("CREATE TABLE shootings (date TEXT, location TEXT, deaths TEXT, injuries TEXT, description TEXT);");
+
+                // Helper function to extract year from the date
+                function extractYear(date) {
+                    const yearMatch = date.match(/\b(19|20)\d{2}\b/);  // Regex to extract a 4-digit year starting with 19 or 20
+                    return yearMatch ? parseInt(yearMatch[0]) : null;   // Return the year as a number, or null if not found
+                }
+
+                // Helper function to extract state from location
+                function extractState(location) {
+                    return location.split(',').pop().trim();
+                }
+
+                // Insert scraped data into the database
+                const data = <%- JSON.stringify(data) %>;
+
+                data.forEach(item => {
+                    const year = extractYear(item.date);  // Use regex to extract the year
+                    const state = extractState(item.location);
+                    db.run(`INSERT INTO shootings (date, location, deaths, injuries, description) VALUES (?, ?, ?, ?, ?)`, 
+                        [item.date || 'N/A', item.location || 'N/A', item.deaths || 'N/A', item.injuries || 'N/A', item.description || 'N/A']);
+                });
+
+                // Query for Charts
+                const deathsTrend = db.exec(`
+                    SELECT SUBSTR(date, -4) as year, SUM(CAST(deaths AS INT)) as deaths_count
+                    FROM shootings
+                    WHERE year IS NOT NULL
+                    GROUP BY year
+                    ORDER BY year
+                `);
+
+                const years = deathsTrend[0].values.map(row => row[0]);
+                const deathsPerYear = deathsTrend[0].values.map(row => row[1]);
+
+                const deathsByStateQuery = db.exec(`
+                    SELECT location, SUM(CAST(deaths as INT)) as total_deaths
+                    FROM shootings
+                    GROUP BY location
+                `);
+
+                const stateDeathsMap = {};
+                deathsByStateQuery[0].values.forEach(row => {
+                    const state = row[0].split(',').pop().trim(); // Extract state from location
+                    const deaths = row[1];
+                    if (stateDeathsMap[state]) {
+                        stateDeathsMap[state] += deaths;
+                    } else {
+                        stateDeathsMap[state] = deaths;
+                    }
+                });
+
+                const states = Object.keys(stateDeathsMap);
+                const deathsByState = Object.values(stateDeathsMap);
+
+		        const tableBody = document.getElementById('data-table');
+                const showMoreBtn = document.getElementById('show-more-btn');
+
+                let filteredData = data.slice();
+                let displayedRows = 10;  // How many rows to display initially
+                let showMore = true; // Track whether the button is showing more or less
+
+                // Helper function to render the table with "Show More" and "Show Less" functionality
+                function renderTable(filteredData) {
+                    tableBody.innerHTML = '';  // Clear the table
+                    const rowsToShow = showMore ? filteredData.slice(0, displayedRows) : filteredData; // Show all rows if 'Show Less'
+
+                    rowsToShow.forEach(row => {
+                        const tr = document.createElement('tr');
+
+                        ['date', 'location', 'deaths', 'injuries', 'description'].forEach(key => {
+                            const td = document.createElement('td');
+                            td.className = "p-2 border";
+
+                            // Handle missing or 'N/A' values for deaths and injuries
+                            if (key === 'deaths' || 'injuries') {
+                                td.innerText = row[key] === 'N/A' || !row[key] ? 0 : row[key];  // Default to 0 if value is 'N/A' or empty
+                            } else {
+                                td.innerText = row[key] || 'N/A';  // For other fields, default to 'N/A'
+                            }
+
+                            tr.appendChild(td);
+                        });
+
+                        tableBody.appendChild(tr);
+                    });
+
+                    // Toggle button text based on whether more or less rows are being shown
+                    showMoreBtn.textContent = showMore ? 'Show More' : 'Show Less';
+
+                    // If in "Show Less" mode, make the button sticky under the table
+                    if (!showMore) {
+                        showMoreBtn.classList.add('sticky');
+                    } else {
+                        showMoreBtn.classList.remove('sticky');
+                    }
+
+                    // Show "Show More" button if there are more rows to show or Show Less if all rows are displayed
+                    if (filteredData.length > displayedRows || !showMore) {
+                        showMoreBtn.classList.remove('hidden');
+                    } else {
+                        showMoreBtn.classList.add('hidden');
+                    }
+                }
+
+                // Initial render (sorted by date descending by default)
+                let sortedData = data.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderTable(sortedData);
+
+                // Show more/less functionality
+                showMoreBtn.addEventListener('click', () => {
+                    showMore = !showMore;  // Toggle the show more/less state
+                    renderTable(filteredData);  // Re-render the table based on current state
+                });
+
+                // Populate filters dynamically
+                const uniqueStates = [...new Set(data.map(row => extractState(row.location)))];
+                const uniqueYears = [...new Set(data.map(row => extractYear(row.date)))].sort((a, b) => b - a);
+
+                const stateFilter = document.getElementById('filter-state');
+                const yearFilter = document.getElementById('filter-year');
+                const modalStateFilter = document.getElementById('modal-filter-state');
+                const modalYearFilter = document.getElementById('modal-filter-year');
+
+                uniqueStates.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    stateFilter.appendChild(option);
+
+                    // Also append to modal filter
+                    const modalOption = option.cloneNode(true);
+                    modalStateFilter.appendChild(modalOption);
+                });
+
+                uniqueYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearFilter.appendChild(option);
+
+                    // Also append to modal filter
+                    const modalOption = option.cloneNode(true);
+                    modalYearFilter.appendChild(modalOption);
+                });
+
+                // Filter and sort logic
+                function applyFiltersAndSort() {
+                    filteredData = data.slice();
+
+                    const selectedState = stateFilter.value !== 'all' ? stateFilter.value : modalStateFilter.value;
+                    const selectedYear = yearFilter.value !== 'all' ? yearFilter.value : modalYearFilter.value;
+                    const sortByDeaths = document.getElementById('sort-deaths-checkbox').checked || document.getElementById('modal-sort-deaths-checkbox').checked;
+
+                    if (selectedState !== 'all') {
+                        filteredData = filteredData.filter(row => extractState(row.location) === selectedState);
+                    }
+
+                    if (selectedYear !== 'all') {
+                        filteredData = filteredData.filter(row => extractYear(row.date) == selectedYear);
+                    }
+
+                    if (sortByDeaths) {
+                        filteredData.sort((a, b) => parseInt(b.deaths) - parseInt(a.deaths));
+                    }
+
+                    displayedRows = 10;  // Reset to show only 10 rows after filtering
+                    showMore = true;  // Reset "Show More" state after filtering
+                    renderTable(filteredData);  // Render filtered data
+                }
+
+                // Apply filtering when filter values change
+                stateFilter.addEventListener('change', applyFiltersAndSort);
+                yearFilter.addEventListener('change', applyFiltersAndSort);
+                modalStateFilter.addEventListener('change', applyFiltersAndSort);
+                modalYearFilter.addEventListener('change', applyFiltersAndSort);
+                document.getElementById('sort-deaths-checkbox').addEventListener('change', applyFiltersAndSort);
+                document.getElementById('modal-sort-deaths-checkbox').addEventListener('change', applyFiltersAndSort);
+
+                // Sort by date ascending/descending
+                let dateSortAsc = false;
+                document.getElementById('sort-date').addEventListener('click', function() {
+                    dateSortAsc = !dateSortAsc;
+                    filteredData.sort((a, b) => dateSortAsc ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date));
+                    renderTable(filteredData);
+                    this.textContent = `Sort by Date (${dateSortAsc ? 'Asc' : 'Desc'})`;
+                });
+
+                // Sort by date in modal
+                document.getElementById('modal-sort-date').addEventListener('click', function() {
+                    dateSortAsc = !dateSortAsc;
+                    filteredData.sort((a, b) => dateSortAsc ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date));
+                    renderTable(filteredData);
+                    this.textContent = `Sort by Date (${dateSortAsc ? 'Asc' : 'Desc'})`;
+                });
+
+                // Create the charts
+
+                // Line Chart for Deaths Over Time
+                const ctx1 = document.getElementById('deathsTrendChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Number of Deaths',
+                            data: deathsPerYear,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true  // Ensure y-axis (death counts) starts at 0
+                            }
+                        }
+                    }
+                });
+
+                // Bar Chart for Deaths by State
+                const ctx2 = document.getElementById('deathsByStateChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: states,
+                        datasets: [{
+                            label: 'Total Deaths by State',
+                            data: deathsByState,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'x',  // States on the x-axis (normal vertical bar chart)
+                        scales: {
+                            y: {
+                                beginAtZero: true  // Ensure y-axis (death counts) starts at 0
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Modal functionality for small screens
+            const modal = document.getElementById('filter-modal');
+            const modalBtn = document.getElementById('filter-modal-btn');
+            const closeModalBtn = document.getElementById('close-filter-modal');
+
+            modalBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        </script>
+    </div>
+</body>
+</html>
+
