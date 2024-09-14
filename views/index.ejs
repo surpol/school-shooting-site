@@ -14,68 +14,16 @@
     <!-- SQL.js CDN for in-browser database -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 
-    <style>
-        /* Ensure the "Show Less" button floats right below the table */
-        #show-more-btn {
-            margin-top: 20px;
-            display: block;
-            position: relative;
-        }
-
-        #show-more-btn.sticky {
-            position: sticky;
-            bottom: 0;
-            left: 0;
-            right: 0;
-        }
-
-        /* Clean up layout spacing for desktop filters */
-        .filter-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap; /* Ensure the filters wrap neatly on smaller screens */
-        }
-
-        /* Layout the page into three columns */
-        .three-column-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr; /* Three columns */
-            gap: 2rem;
-        }
-
-        /* Modal button for small screens */
-        .filter-modal-button {
-            display: none;
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .three-column-layout {
-                grid-template-columns: 1fr; /* Make it single column on small screens */
-            }
-
-            .filter-modal-button {
-                display: flex;
-                justify-content: flex-start;
-                margin-bottom: 1rem;
-            }
-
-            #filter-sort-controls {
-                display: none; /* Hide filters on mobile view */
-            }
-        }
-    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto mt-8 p-4">
         <h1 class="text-3xl font-bold text-center mb-6">School Shootings Data & Visual Patterns</h1>
-
-        <!-- Modal button for small screens -->
-        <div class="filter-modal-button">
-            <button id="filter-modal-btn" class="p-2 bg-blue-500 text-white rounded-md">Open Filters</button>
-        </div>
+	<!-- Data Source Notice -->
+    	<div class="text-center text-sm mb-4">
+        	<p class="italic">Data sourced from 
+            		<a href="https://en.wikipedia.org/wiki/Lists_of_school_shootings_in_the_United_States" target="_blank" class="text-blue-500 underline">Wikipedia</a>
+        	</p>
+    	</div>
 
         <!-- Modal for small screens -->
         <div id="filter-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
@@ -83,14 +31,12 @@
                 <h2 class="text-xl font-bold mb-4">Filters</h2>
                 <div class="mb-4">
                     <!-- Filter by Year in Modal -->
-                    <label for="modal-filter-year" class="block mb-2">Select Year:</label>
                     <select id="modal-filter-year" class="border w-full">
                         <option value="all">All Years</option>
                     </select>
                 </div>
                 <div class="mb-4">
                     <!-- Filter by State in Modal -->
-                    <label for="modal-filter-state" class="block mb-2">Select State:</label>
                     <select id="modal-filter-state" class="border w-full">
                         <option value="all">All States</option>
                     </select>
@@ -111,21 +57,20 @@
         </div>
 
         <!-- Three-column layout: Filters, Table, Charts -->
-        <div class="three-column-layout">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
             <!-- First Column: Filters -->
-            <div id="filter-sort-controls" class="mb-6 filter-container md:block hidden">
-                <!-- Filter by Year -->
-                <div class="flex items-center gap-2">
-                    <label for="filter-year">Select Year:</label>
-                    <select id="filter-year" class="border p-1">
+            <div class="md:col-span-2 mb-6">
+                <h1 class="text-xl font-semibold mb-2"> Filters </h1>
+		<!-- Filter by Year -->
+                <div class="flex items-center mb-2">
+                    <select id="filter-year" class="border p-1 w-full">
                         <option value="all">All Years</option>
                     </select>
                 </div>
 
                 <!-- Filter by State -->
-                <div class="mb-2 gap-2">
-                    <label for="filter-state">Select State:</label>
-                    <select id="filter-state" class="border p-1">
+                <div class="mb-2">
+                    <select id="filter-state" class="border p-1 w-full">
                         <option value="all">All States</option>
                     </select>
                 </div>
@@ -135,15 +80,14 @@
                     <label for="sort-deaths-checkbox">
                         <input type="checkbox" id="sort-deaths-checkbox" class="mr-1">Sort by Death Count
                     </label>
-		</div>
-		<div class="mb-2 gap-2">
+		        </div>
+                <div class="mb-2 gap-2">
                     <button id="sort-date" class="border p-1 bg-blue-500 text-white">Sort by Date (Desc)</button>
                 </div>
             </div>
 
             <!-- Second Column: Table -->
-            <div class="overflow-auto">
-                <h2 class="text-2xl font-semibold mb-4">School Shootings Data Table</h2>
+            <div class="md:col-span-7 overflow-auto">
                 <table class="table-auto w-full text-left bg-white border border-gray-200 shadow-md">
                     <thead>
                         <tr class="bg-gray-200">
@@ -165,9 +109,9 @@
             </div>
 
             <!-- Third Column: Charts -->
-            <div>
+            <div class="md:col-span-3">
                 <!-- Line Chart for Deaths Over Time -->
-                <h2 class="text-2xl font-semibold mb-4 text-center">Deaths Over Time</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-center">Deaths by Time</h2>
                 <canvas id="deathsTrendChart"></canvas>
 
                 <!-- Bar Chart for Deaths by State -->
@@ -188,6 +132,7 @@
                     });
                 </script>
             </div>
+	
         </div>
 
         <!-- SQL.js and Chart.js Script to Populate the Table and Charts -->
@@ -261,7 +206,7 @@
                 const showMoreBtn = document.getElementById('show-more-btn');
 
                 let filteredData = data.slice();
-                let displayedRows = 10;  // How many rows to display initially
+                let displayedRows = 8;  // How many rows to display initially
                 let showMore = true; // Track whether the button is showing more or less
 
                 // Helper function to render the table with "Show More" and "Show Less" functionality
