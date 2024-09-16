@@ -17,104 +17,115 @@
 
 </head>
 <body class="bg-gray-100">
-    <div class="bg-white-500 mt-8 p-4">
-        <h1 class="text-3xl font-bold text-center mb-6">USA School Shootings News</h1>
-        <!-- Data Source Notice -->
-        <div class="text-center text-sm mb-4">
-            <p class="italic">Data source: 
-                <a href="https://en.wikipedia.org/wiki/Lists_of_school_shootings_in_the_United_States" target="_blank" class="text-blue-500 underline">Wikipedia</a>
+    <!-- Header -->
+    <header class="bg-white shadow">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold text-center">USA School Shootings Data & Charts</h1>
+            <p class="text-center text-sm text-gray-600 mt-2">
+                Data source:
+                <a href="https://en.wikipedia.org/wiki/Lists_of_school_shootings_in_the_United_States" target="_blank" class="text-blue-500 underline">
+                    Wikipedia
+                </a>
             </p>
         </div>
-    </div>
+    </header>
     <div class="container mx-auto">
         <!-- Three-column layout: -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <!-- First Column (Filters Sidebar) -->
-            <!-- Hidden on mobile devices, shown on medium and larger screens -->
-            <div class="hidden md:block md:col-span-2">
-                <div class="bg-white p-3 mb-2">
-                    <h1 class="text-xl font-semibold mb-2"> Filters </h1>
-                    <!-- Filter Controls -->
-                    <!-- Filter by Year -->
-                    <div class="mb-2">
-                        <select id="filter-year" class="border p-1 w-full">
+            <!-- Filters Sidebar -->
+            <aside class="md:col-span-2 hidden md:block mt-4">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-4">Filters</h2>
+                    <!-- Year Filter -->
+                    <div class="mb-4">
+                        <label for="filter-year" class="block text-sm font-medium text-gray-700">Year</label>
+                        <select id="filter-year" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="all">All years</option>
+                            <!-- Options populated dynamically -->
                         </select>
                     </div>
-
-                    <!-- Filter by State -->
-                    <div class="mb-2">
-                        <select id="filter-state" class="border p-1 w-full">
+                    <!-- State Filter -->
+                    <div class="mb-4">
+                        <label for="filter-state" class="block text-sm font-medium text-gray-700">State</label>
+                        <select id="filter-state" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="all">All states</option>
+                            <!-- Options populated dynamically -->
                         </select>
                     </div>
-
-                    <!-- Sort by Date Dropdown -->
-                    <div class="mb-2">
-                        <select id="sort-date-select" class="border p-1 w-full">
+                    <!-- Sort Options -->
+                    <div class="mb-4">
+                        <label for="sort-date-select" class="block text-sm font-medium text-gray-700">Sort by Date</label>
+                        <select id="sort-date-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="latest">Recent</option>
                             <option value="oldest">Older</option>
                         </select>
                     </div>
-
-                    <!-- Sort Controls -->
-                    <div class="mb-2">
-                        <label for="sort-deaths-checkbox" class="flex items-center">
-                            <input type="checkbox" id="sort-deaths-checkbox" class="mr-2">Sort by death count
+                    <div class="mb-4">
+                        <label class="flex items-center text-sm text-gray-700">
+                            <input type="checkbox" id="sort-deaths-checkbox" class="mr-2 focus:ring-blue-500" />
+                            Sort by Total Deaths
                         </label>
                     </div>
                 </div>
+            </aside>
 
-            </div>
-
-            <!-- Second Column: Table -->
-            <div class="md:col-span-7">
-                <h1 id="total-count" class="text-md text-gray-600 mb-1"> </h1>
-                <div class="relative">
-                    <div class="overflow-auto max-h-[calc(100vh-80px)]">
-                        <table class="table-auto w-full text-left bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-200">
-                                    <th class="p-2 border">Date</th>
-                                    <th class="p-2 border">Location</th>
-                                    <th class="p-2 border">Deaths</th>
-                                    <th class="p-2 border">Injuries</th>
-                                    <th class="p-2 border">Description</th>
+            <!-- Data Table -->
+            <section class="md:col-span-7 mt-4">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h2 id="total-count" class="text-lg font-medium text-gray-700 mb-4"></h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Date</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Location</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Deaths</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Injuries</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Description</th>
                                 </tr>
                             </thead>
-                            <tbody id="data-table">
-                                <!-- Rows will be dynamically populated -->
+                            <tbody id="data-table" class="divide-y divide-gray-200">
+                                <!-- Rows populated dynamically -->
                             </tbody>
                         </table>
                     </div>
                     <!-- Show More/Show Less Button -->
-                    <div class="sticky bottom-0 w-full flex justify-center p-4">
-                        <button id="show-more-btn" class="p-2 bg-gray-400 bg-opacity-50 text-black"></button>
+                    <div class="mt-4 flex justify-center">
+                        <button id="show-more-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Show more
+                        </button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Third Column: Charts -->
-            <div class="md:col-span-3 p-3">
-                <!-- Line Chart for Deaths Over Time -->
-                <h1 class="text-2xl font-semibold mb-4 text-left">Data Visuals</h1>
-                <canvas id="deathsTrendChart" class="clickable-chart cursor-pointer bg-white mb-2"></canvas>
+            <!-- Charts and Trends -->
+            <aside class="md:col-span-3">
+                <div class="space-y-6">
+                    <!-- Data Visuals -->
+                    <div class="bg-white p-4 rounded-lg shadow-md mt-4">
+                        <h2 class="text-xl font-semibold mb-4">Data Visuals</h2>
+                        <canvas id="deathsTrendChart" class="clickable-chart cursor-pointer"></canvas>
+                        <canvas id="deathsByStateChart" class="clickable-chart cursor-pointer"></canvas>
+                    </div>
+                    <!-- Google Trends -->
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Search Trends</h2>
+                        <div id="trends-widget-container" class="mb-4"></div>
+                        <div id="trends-widget-container-2"></div>
+                    </div>
+                </div>
+            </aside>
 
-                <!-- Bar Chart for Deaths by State -->
-                <canvas id="deathsByStateChart" class="clickable-chart cursor-pointer bg-white"></canvas>
-
-                <!-- Google Trends Embedding -->
-                <h1 class="text-2xl font-semibold mb-4 mt-4 text-left">Search Trends (google.com)</h1>
-                <div id="trends-widget-container" class="p-1"></div>
-                <div id="trends-widget-container-2" class="p-1"></div>
-            </div>
-
-            <!-- Modal for displaying enlarged charts -->
-            <div id="chart-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
-                <div class="bg-white p-6 w-4/5">
-                    <h2 class="text-xl font-bold mb-4">Chart View</h2>
+            <!-- Chart Modal -->
+            <div id="chart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                <div class="bg-white p-6 w-11/12 max-w-3xl md:max-w-screen-md lg:max-w-screen-lg rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold mb-2">Chart View</h2>
                     <canvas id="modalChart"></canvas>
-                    <button id="close-chart-modal" class="mt-4 p-2 bg-red-500 text-white">Close</button>
+                    <div class="flex justify-end mt-6">
+                        <button id="close-chart-modal" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,50 +136,53 @@
         </button>
 
         <!-- Filters Modal for Mobile -->
-        <div id="filters-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center hidden">
-            <div class="bg-white p-6 w-11/12 max-w-md mx-auto">
-                <h2 class="text-xl font-bold mb-4">Filters</h2>
-                <!-- Filter Controls (same as in the sidebar) -->
-                <!-- Filter by Year -->
-                <div class="mb-2">
-                    <select id="filter-year-modal" class="border p-1 w-full">
+        <div id="filters-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 w-11/12 max-w-md rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Filters</h2>
+                <!-- Filter Controls -->
+                <!-- Year Filter -->
+                <div class="mb-4">
+                    <label for="filter-year-modal" class="block text-sm font-medium text-gray-700">Year</label>
+                    <select id="filter-year-modal" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="all">All years</option>
                     </select>
                 </div>
-
-                <!-- Filter by State -->
-                <div class="mb-2">
-                    <select id="filter-state-modal" class="border p-1 w-full">
+                <!-- State Filter -->
+                <div class="mb-4">
+                    <label for="filter-state-modal" class="block text-sm font-medium text-gray-700">State</label>
+                    <select id="filter-state-modal" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="all">All states</option>
                     </select>
                 </div>
-
-                <!-- Sort by Date Dropdown -->
-                <div class="mb-2">
-                    <select id="sort-date-select-modal" class="border p-1 w-full">
+                <!-- Sort Options -->
+                <div class="mb-4">
+                    <label for="sort-date-select-modal" class="block text-sm font-medium text-gray-700">Sort by Date</label>
+                    <select id="sort-date-select-modal" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="latest">Recent</option>
                         <option value="oldest">Older</option>
                     </select>
                 </div>
-
-                <!-- Sort Controls -->
-                <div class="mb-2">
-                    <label for="sort-deaths-checkbox-modal" class="flex items-center">
-                        <input type="checkbox" id="sort-deaths-checkbox-modal" class="mr-2">Sort by death count
+                <div class="mb-4">
+                    <label class="flex items-center text-sm text-gray-700">
+                        <input type="checkbox" id="sort-deaths-checkbox-modal" class="mr-2 focus:ring-blue-500" />
+                        Sort by Death Count
                     </label>
                 </div>
-
                 <!-- Modal Buttons -->
-                <div class="flex justify-end mt-4">
-                    <button id="apply-filters-btn" class="mr-2 p-2 bg-blue-500 text-white">Apply</button>
-                    <button id="close-filters-btn" class="p-2 bg-gray-500 text-white">Close</button>
+                <div class="flex justify-end mt-6">
+                    <button id="apply-filters-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2">
+                        Apply
+                    </button>
+                    <button id="close-filters-btn" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Top Stories Section -->
         <div class="mt-4">
-            <h2 class="text-3xl font-bold mb-6 text-left">Latest News</h2>
+            <h2 class="text-3xl font-bold mb-3 text-left">Latest News</h2>
             <div id="top-stories-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <!-- Top stories will be dynamically populated here -->
             </div>
@@ -287,7 +301,7 @@
                         td.className = "p-2 border";
 
                         if (key === 'location') {
-                            const locationLink = `<a href="https://en.wikipedia.org/wiki/${encodeURIComponent(row[key])}" target="_blank">${row[key]}</a>`;
+                            const locationLink = `<a href="https://en.wikipedia.org/wiki/${encodeURIComponent(row[key])}" target="_blank" class="text-blue-500 hover:underline">${row[key]}</a>`;
                             td.innerHTML = locationLink || 'N/A';
                         } else if (key === 'description') {
                             td.innerHTML = row[key] || 'N/A';
@@ -389,71 +403,115 @@
             const ctx1 = document.getElementById('deathsTrendChart').getContext('2d');
             const ctx2 = document.getElementById('deathsByStateChart').getContext('2d');
 
-            const lineChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: [{
-                        label: 'Number of Deaths',
-                        data: deathsPerYear,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: true
-                    }]
-                },
-                options: {
-                    scales: { y: { beginAtZero: true } }
+                    // Line chart for deaths over time
+        const lineChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Number of Deaths',
+                    data: deathsPerYear,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            enabled: true,
+                            mode: 'x', // Enable zoom on x-axis
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'x', // Allow panning on x-axis
+                        }
+                    }
                 }
-            });
-
-            const barChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: states,
-                    datasets: [{
-                        label: 'Total Deaths by State',
-                        data: deathsByState,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'x',
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-
-            // =========================
-            // Chart Modal Functionality
-            // =========================
-            const chartModal = document.getElementById('chart-modal');
-            const closeModal = document.getElementById('close-chart-modal');
-            const modalChartCanvas = document.getElementById('modalChart').getContext('2d');
-            let modalChartInstance;
-
-            function openModalWithChart(chartConfig) {
-                chartModal.classList.remove('hidden');
-                if (modalChartInstance) {
-                    modalChartInstance.destroy();
-                }
-                modalChartInstance = new Chart(modalChartCanvas, chartConfig);
             }
+        });
 
-            closeModal.addEventListener('click', () => {
-                chartModal.classList.add('hidden');
+        // Bar chart for deaths by state
+        const barChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: states,
+                datasets: [{
+                    label: 'Total Deaths by State',
+                    data: deathsByState,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                indexAxis: 'x',
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            enabled: true,
+                            mode: 'x', // Enable zoom on x-axis
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'x', // Allow panning on x-axis
+                        }
+                    }
+                }
+            }
+        });
+            // =========================
+        // Chart Modal Functionality
+        // =========================
+        const chartModal = document.getElementById('chart-modal');
+        const closeModal = document.getElementById('close-chart-modal');
+        const modalChartCanvas = document.getElementById('modalChart').getContext('2d');
+        let modalChartInstance;
+
+        // Open modal and load the clicked chart in full screen with zoom enabled
+        document.querySelectorAll('.clickable-chart').forEach(chartElement => {
+            chartElement.addEventListener('click', function () {
+                chartModal.classList.remove('hidden');
+                const chartConfig = this.id === 'deathsTrendChart' ? lineChart.config : barChart.config;
+
+                // Destroy the existing modal chart if it exists
                 if (modalChartInstance) {
                     modalChartInstance.destroy();
                 }
-            });
 
-            document.querySelectorAll('.clickable-chart').forEach(chartElement => {
-                chartElement.addEventListener('click', function() {
-                    const chart = this.id === 'deathsTrendChart' ? lineChart : barChart;
-                    const chartConfig = chart.config;
-                    openModalWithChart(chartConfig);
+                // Create a new chart instance for the modal with zoom and pan enabled
+                modalChartInstance = new Chart(modalChartCanvas, {
+                    type: chartConfig.type,
+                    data: chartConfig.data,
+                    options: {
+                        ...chartConfig.options,
+                        plugins: {
+                            zoom: {
+                                zoom: {
+                                    enabled: true,
+                                    mode: 'x',
+                                },
+                                pan: {
+                                    enabled: true,
+                                    mode: 'x',
+                                }
+                            }
+                        }
+                    }
                 });
             });
+        });
+
+        // Close the chart modal
+        closeModal.addEventListener('click', () => {
+            chartModal.classList.add('hidden');
+            if (modalChartInstance) {
+                modalChartInstance.destroy();
+            }
+        });
 
             // =========================
             // Fetch Top Stories from API and Display
@@ -468,33 +526,31 @@
                 }
             }
 
-            function displayTopStories(data) {
+            function displayTopStories(stories) {
                 const container = document.getElementById('top-stories-container');
-                container.innerHTML = ''; // Clear existing content
-
-                // Check if the 'carousel' property exists and is an array
-                if (data.carousel && Array.isArray(data.carousel)) {
-                    const stories = data.carousel;
-
-                    stories.forEach(story => {
+                container.innerHTML = '';
+                const newsStory = stories.news_about_threat_school_shooting;
+                if (Array.isArray(newsStory) && newsStory.length > 0) {
+                    newsStory.forEach(story => {
                         const card = `
-                        <div class="bg-white overflow-hidden max-w-xs mx-auto">
-                            <img src="${story.thumbnail}" alt="${story.title}" class="w-full h-32 object-cover">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <img src="${story.thumbnail}" alt="${story.title}" class="w-full h-40 object-cover" />
                             <div class="p-4">
-                                <h3 class="text-md">
-                                    <a href="${story.link}" target="_blank" class="text-blue-600">${story.title}</a>
+                                <h3 class="text-lg font-semibold">
+                                    <a href="${story.link}" target="_blank" class="text-blue-600 hover:underline">
+                                        ${story.title}
+                                    </a>
                                 </h3>
-                                <p class="text-sm mt-1 text-gray-600">${story.source} - ${story.date}</p>
+                                <p class="text-sm text-gray-500 mt-2">${story.source} - ${story.date}</p>
                             </div>
                         </div>
                         `;
                         container.insertAdjacentHTML('beforeend', card);
                     });
                 } else {
-                    // Handle the case when there are no stories or the structure is incorrect
-                    container.innerHTML = `<p class="text-red-500">No top stories available.</p>`;
+                    container.innerHTML = '<p class="text-gray-600">No top stories available.</p>';
                 }
-            }
+        }
 
             // Fetch Top Stories on Page Load
             fetchTopStories();
