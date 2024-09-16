@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
+const { getJson } = require("serpapi");
 
 const app = express();
 
@@ -14,7 +15,6 @@ app.use(express.static('public')); // for static files like CSS, JS
 const WIKIPEDIA_URLS = [
   'https://en.wikipedia.org/wiki/List_of_school_shootings_in_the_United_States_(before_2000)',
   'https://en.wikipedia.org/wiki/List_of_school_shootings_in_the_United_States_(2000%E2%80%93present)',
-  'https://en.wikipedia.org/wiki/List_of_school_shootings_in_the_United_States_by_death_toll'
 ];
 
 // Helper function to sanitize data and remove footnotes or non-numeric characters
@@ -85,8 +85,26 @@ app.get('/', async (req, res) => {
   res.render('index', { data: schoolData });
 });
 
+// Fetching top stories using SerpApi
+app.get('/api/top-stories', (req, res) => {
+  getJson({
+    api_key: "299d300446cf633f9b87570cf5a12446ecfcd7f9d507ca5ea04d06ce3a33cdc7",
+    engine: "google",
+    q: "school shooting",
+    location: "United States",
+    google_domain: "google.com",
+    gl: "us",
+    hl: "en",
+    device: "mobile"
+  }, (json) => {
+    // Extracting top stories
+    const topStories = json.top_stories || [];
+    res.json(topStories);
+  });
+})
+;
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
