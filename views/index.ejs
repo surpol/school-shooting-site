@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School Shootings Data & Charts</title>
@@ -10,6 +11,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SQL.js CDN for in-browser database -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
+    <!-- Google Trends Script (Load Once) -->
+    <script src="https://ssl.gstatic.com/trends_nrtr/3826_RC01/embed_loader.js"></script>
+    <!-- GoFundMe Embed Script -->
+    <script defer src="https://www.gofundme.com/static/js/embed.js"></script>
+
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto mt-8 p-4">
@@ -23,41 +29,44 @@
 
         <!-- Three-column layout: -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <!-- First Column -->
-            <div class="md:col-span-2">
+            <!-- First Column (Filters Sidebar) -->
+            <!-- Hidden on mobile devices, shown on medium and larger screens -->
+            <div class="hidden md:block md:col-span-2">
                 <div class="bg-white p-3 mb-2">
                     <h1 class="text-xl font-semibold mb-2"> Filters </h1>
+                    <!-- Filter Controls -->
                     <!-- Filter by Year -->
-                    <div class="flex items-center mb-2">
+                    <div class="mb-2">
                         <select id="filter-year" class="border p-1 w-full">
                             <option value="all">All years</option>
                         </select>
                     </div>
-    
+
                     <!-- Filter by State -->
                     <div class="mb-2">
                         <select id="filter-state" class="border p-1 w-full">
                             <option value="all">All states</option>
                         </select>
                     </div>
+
                     <!-- Sort by Date Dropdown -->
-                    <div class="mb-2 gap-2">
+                    <div class="mb-2">
                         <select id="sort-date-select" class="border p-1 w-full">
                             <option value="latest">Recent</option>
                             <option value="oldest">Older</option>
                         </select>
                     </div>
+
                     <!-- Sort Controls -->
-                    <div class="mb-2 gap-2">
-                        <label for="sort-deaths-checkbox">
-                            <input type="checkbox" id="sort-deaths-checkbox" class="mr-1">Sort by death count
+                    <div class="mb-2">
+                        <label for="sort-deaths-checkbox" class="flex items-center">
+                            <input type="checkbox" id="sort-deaths-checkbox" class="mr-2">Sort by death count
                         </label>
                     </div>
                 </div>
-                <!-- GoFundMe Embed -->
-                <div class="">
-                    <div class="gfm-embed" data-url="https://www.gofundme.com/f/help-the-victims-of-the-apalachee-high-school-shooting/widget/large?sharesheet=CAMPAIGN_PAGE&attribution_id=undefined"></div>
-                    <script defer src="https://www.gofundme.com/static/js/embed.js"></script>
+                <!-- GoFundMe Embed for Desktop -->
+                <div class="mt-4">
+                    <div class="gfm-embed" data-url="https://www.gofundme.com/f/help-the-victims-of-the-apalachee-high-school-shooting/widget/large"></div>
                 </div>
             </div>
 
@@ -83,12 +92,10 @@
                     </div>
                     <!-- Show More/Show Less Button -->
                     <div class="sticky bottom-0 w-full flex justify-center p-4">
-                        <button id="show-more-btn" class="p-2 bg-blue-500 text-white">Show more</button>
+                        <button id="show-more-btn" class="p-2 bg-gray-400 bg-opacity-50 text-black"></button>
                     </div>
                 </div>
             </div>
-            
-            
 
             <!-- Third Column: Charts -->
             <div class="md:col-span-3 p-3">
@@ -100,7 +107,7 @@
                 <canvas id="deathsByStateChart" class="clickable-chart cursor-pointer bg-white"></canvas>
 
                 <!-- Google Trends Embedding -->
-                <h1 class="text-2xl font-semibold mb-4 mt-4 text-left">Search Trends (google.com) </h1>
+                <h1 class="text-2xl font-semibold mb-4 mt-4 text-left">Search Trends (google.com)</h1>
                 <div id="trends-widget-container" class="p-1"></div>
                 <div id="trends-widget-container-2" class="p-1"></div>
             </div>
@@ -110,7 +117,54 @@
                 <div class="bg-white p-6 w-4/5">
                     <h2 class="text-xl font-bold mb-4">Chart View</h2>
                     <canvas id="modalChart"></canvas>
-                    <button id="close-chart-modal" class="mt-4 p-2 bg-red-500 text-white rounded-md">Close</button>
+                    <button id="close-chart-modal" class="mt-4 p-2 bg-red-500 text-white">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Filters Button for Mobile -->
+        <button id="open-filters-btn" class="fixed bottom-4 right-4 p-3 bg-blue-500 text-white md:hidden">
+            Filters
+        </button>
+
+        <!-- Filters Modal for Mobile -->
+        <div id="filters-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center hidden">
+            <div class="bg-white p-6 w-11/12 max-w-md mx-auto">
+                <h2 class="text-xl font-bold mb-4">Filters</h2>
+                <!-- Filter Controls (same as in the sidebar) -->
+                <!-- Filter by Year -->
+                <div class="mb-2">
+                    <select id="filter-year-modal" class="border p-1 w-full">
+                        <option value="all">All years</option>
+                    </select>
+                </div>
+
+                <!-- Filter by State -->
+                <div class="mb-2">
+                    <select id="filter-state-modal" class="border p-1 w-full">
+                        <option value="all">All states</option>
+                    </select>
+                </div>
+
+                <!-- Sort by Date Dropdown -->
+                <div class="mb-2">
+                    <select id="sort-date-select-modal" class="border p-1 w-full">
+                        <option value="latest">Recent</option>
+                        <option value="oldest">Older</option>
+                    </select>
+                </div>
+
+                <!-- Sort Controls -->
+                <div class="mb-2">
+                    <label for="sort-deaths-checkbox-modal" class="flex items-center">
+                        <input type="checkbox" id="sort-deaths-checkbox-modal" class="mr-2">Sort by death count
+                    </label>
+                </div>
+
+                <!-- Modal Buttons -->
+                <div class="flex justify-end mt-4">
+                    <button id="apply-filters-btn" class="mr-2 p-2 bg-blue-500 text-white">Apply</button>
+                    <button id="close-filters-btn" class="p-2 bg-gray-500 text-white">Close</button>
                 </div>
             </div>
         </div>
@@ -122,13 +176,16 @@
                 <!-- Top stories will be dynamically populated here -->
             </div>
         </div>
+
+        <!-- GoFundMe Embed for Mobile -->
+        <div class="mt-8 md:hidden">
+            <div class="gfm-embed" data-url="https://www.gofundme.com/f/help-the-victims-of-the-apalachee-high-school-shooting/widget/large"></div>
+        </div>
     </div>
 
-    
-    <!-- Google Trends Script (Load Once) -->
-    <script src="https://ssl.gstatic.com/trends_nrtr/3826_RC01/embed_loader.js"></script> 
+    <!-- Scripts -->
     <script>
-        // Render both Google Trends widgets
+        // Google Trends Widgets
         trends.embed.renderExploreWidgetTo(
             document.getElementById('trends-widget-container'),
             "RELATED_QUERIES",
@@ -149,7 +206,6 @@
             }
         );
 
-        
         trends.embed.renderExploreWidgetTo(
             document.getElementById('trends-widget-container-2'),
             "TIMESERIES", 
@@ -159,12 +215,11 @@
                 "property": ""
             },
             {
-                "exploreQuery":"geo=US&q=School%20shooting&hl=en&date=today 12-m",
+                "exploreQuery":"geo=US&q=School%20shooting&hl=en&date=today%2012-m",
                 "guestPath":"https://trends.google.com:443/trends/embed/"
             }
         );
-    </script>
-    <script>
+
         // SQL.js and Chart.js Script to Populate the Table and Charts
 
         // =========================
@@ -181,7 +236,7 @@
             const db = new SQL.Database();
             db.run("CREATE TABLE shootings (date TEXT, location TEXT, deaths TEXT, injuries TEXT, description TEXT);");
 
-            const data = <%- JSON.stringify(data) %>; // Original data from the server
+            const data = <%- JSON.stringify(data) %>; // Replace with your actual data
 
             data.forEach(item => {
                 db.run(`INSERT INTO shootings (date, location, deaths, injuries, description) VALUES (?, ?, ?, ?, ?)`,
@@ -192,19 +247,21 @@
             const deathsTrend = db.exec(`
                 SELECT SUBSTR(date, -4) as year, SUM(CAST(deaths AS INT)) as deaths_count
                 FROM shootings
-                WHERE year IS NOT NULL
+                WHERE CAST(SUBSTR(date, -4) AS INT) >= 1900
                 GROUP BY year
                 ORDER BY year
             `);
 
             const years = deathsTrend[0].values.map(row => row[0]);
             const deathsPerYear = deathsTrend[0].values.map(row => row[1]);
+
             const deathsByStateQuery = db.exec(`
                 SELECT location, SUM(CAST(deaths as INT)) as total_deaths
                 FROM shootings
+                WHERE CAST(SUBSTR(date, -4) AS INT) >= 1900
                 GROUP BY location
             `);
-            
+
             const stateDeathsMap = {};
             deathsByStateQuery[0].values.forEach(row => {
                 const state = row[0].split(',').pop().trim();
@@ -250,7 +307,7 @@
                     tableBody.appendChild(tr);
                 });
 
-                showMoreBtn.textContent = showMore ? 'Show More' : 'Show Less';
+                showMoreBtn.textContent = showMore ? ' Show more' : ' Show less';
                 showMoreBtn.classList.toggle('hidden', filteredData.length <= displayedRows);
             }
 
@@ -268,9 +325,13 @@
             // =========================
             const stateFilter = document.getElementById('filter-state');
             const yearFilter = document.getElementById('filter-year');
+            const sortDateSelect = document.getElementById('sort-date-select');
+            const sortDeathsCheckbox = document.getElementById('sort-deaths-checkbox');
 
             const uniqueStates = [...new Set(data.map(row => row.location.split(',').pop().trim()))];
-            const uniqueYears = [...new Set(data.map(row => parseInt(row.date.match(/\b(19|20)\d{2}\b/))))].sort((a, b) => b - a);
+            const uniqueYears = [...new Set(data.map(row => parseInt(row.date.match(/\b(19|20)\d{2}\b/))))]
+                .filter(year => year >= 1900)
+                .sort((a, b) => b - a);
 
             uniqueStates.forEach(state => {
                 const option = document.createElement('option');
@@ -291,7 +352,7 @@
 
                 const selectedState = stateFilter.value;
                 const selectedYear = yearFilter.value;
-                const sortByDeaths = document.getElementById('sort-deaths-checkbox').checked;
+                const sortByDeaths = sortDeathsCheckbox.checked;
 
                 if (selectedState !== 'all') {
                     filteredData = filteredData.filter(row => row.location.includes(selectedState));
@@ -299,6 +360,12 @@
 
                 if (selectedYear !== 'all') {
                     filteredData = filteredData.filter(row => row.date.includes(selectedYear));
+                } else {
+                    // Exclude data before 1900
+                    filteredData = filteredData.filter(row => {
+                        const yearMatch = row.date.match(/\b(19|20)\d{2}\b/);
+                        return yearMatch && parseInt(yearMatch[0]) >= 1900;
+                    });
                 }
 
                 if (sortByDeaths) {
@@ -312,8 +379,8 @@
 
             stateFilter.addEventListener('change', applyFiltersAndSort);
             yearFilter.addEventListener('change', applyFiltersAndSort);
-            document.getElementById('sort-deaths-checkbox').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('sort-date-select').addEventListener('change', function() {
+            sortDeathsCheckbox.addEventListener('change', applyFiltersAndSort);
+            sortDateSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
                 if (selectedValue === 'latest') {
                     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -408,8 +475,6 @@
                 }
             }
 
-
-
             function displayTopStories(data) {
                 const container = document.getElementById('top-stories-container');
                 container.innerHTML = ''; // Clear existing content
@@ -429,7 +494,6 @@
                                 <p class="text-sm mt-1 text-gray-600">${story.source} - ${story.date}</p>
                             </div>
                         </div>
-
                         `;
                         container.insertAdjacentHTML('beforeend', card);
                     });
@@ -439,9 +503,60 @@
                 }
             }
 
-
             // Fetch Top Stories on Page Load
             fetchTopStories();
+
+            // =========================
+            // Filters Modal Functionality
+            // =========================
+            // Elements
+            const openFiltersBtn = document.getElementById('open-filters-btn');
+            const filtersModal = document.getElementById('filters-modal');
+            const closeFiltersBtn = document.getElementById('close-filters-btn');
+            const applyFiltersBtn = document.getElementById('apply-filters-btn');
+
+            // Filter controls in modal
+            const stateFilterModal = document.getElementById('filter-state-modal');
+            const yearFilterModal = document.getElementById('filter-year-modal');
+            const sortDateSelectModal = document.getElementById('sort-date-select-modal');
+            const sortDeathsCheckboxModal = document.getElementById('sort-deaths-checkbox-modal');
+
+            // Event Listeners
+            openFiltersBtn.addEventListener('click', () => {
+                filtersModal.classList.remove('hidden');
+                populateModalFilters();
+            });
+
+            closeFiltersBtn.addEventListener('click', () => {
+                filtersModal.classList.add('hidden');
+            });
+
+            applyFiltersBtn.addEventListener('click', () => {
+                // Sync the modal filters with the main filters
+                stateFilter.value = stateFilterModal.value;
+                yearFilter.value = yearFilterModal.value;
+                sortDateSelect.value = sortDateSelectModal.value;
+                sortDeathsCheckbox.checked = sortDeathsCheckboxModal.checked;
+
+                applyFiltersAndSort();
+
+                filtersModal.classList.add('hidden');
+            });
+
+            // Populate modal filters with the same options as the main filters
+            function populateModalFilters() {
+                // Populate State Filter
+                stateFilterModal.innerHTML = stateFilter.innerHTML;
+
+                // Populate Year Filter
+                yearFilterModal.innerHTML = yearFilter.innerHTML;
+
+                // Set current values
+                stateFilterModal.value = stateFilter.value;
+                yearFilterModal.value = yearFilter.value;
+                sortDateSelectModal.value = sortDateSelect.value;
+                sortDeathsCheckboxModal.checked = sortDeathsCheckbox.checked;
+            }
         });
     </script>
 </body>
