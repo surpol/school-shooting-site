@@ -63,7 +63,7 @@
                     <div class="mb-4">
                         <label class="flex items-center text-sm text-gray-700">
                             <input type="checkbox" id="sort-deaths-checkbox" class="mr-2 focus:ring-blue-500" />
-                            Sort by Total Deaths
+                            Sort by Total
                         </label>
                     </div>
                 </div>
@@ -98,6 +98,7 @@
                 </div>
             </section>
 
+            <!-- Third Column: Charts -->
             <!-- Charts and Trends -->
             <aside class="md:col-span-3">
                 <div class="space-y-6">
@@ -116,9 +117,9 @@
                 </div>
             </aside>
 
-            <!-- Chart Modal -->
+                    <!-- Chart Modal -->
             <div id="chart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-                <div class="bg-white p-6 w-11/12 max-w-3xl md:max-w-screen-md lg:max-w-screen-lg rounded-lg shadow-lg">
+                <div class="bg-white p-6 w-11/12 max-w-3xl rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-2">Chart View</h2>
                     <canvas id="modalChart"></canvas>
                     <div class="flex justify-end mt-6">
@@ -403,115 +404,71 @@
             const ctx1 = document.getElementById('deathsTrendChart').getContext('2d');
             const ctx2 = document.getElementById('deathsByStateChart').getContext('2d');
 
-                    // Line chart for deaths over time
-        const lineChart = new Chart(ctx1, {
-            type: 'line',
-            data: {
-                labels: years,
-                datasets: [{
-                    label: 'Number of Deaths',
-                    data: deathsPerYear,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    fill: true,
-                }]
-            },
-            options: {
-                scales: { y: { beginAtZero: true } },
-                plugins: {
-                    zoom: {
-                        zoom: {
-                            enabled: true,
-                            mode: 'x', // Enable zoom on x-axis
-                        },
-                        pan: {
-                            enabled: true,
-                            mode: 'x', // Allow panning on x-axis
-                        }
-                    }
+            const lineChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Number of Deaths',
+                        data: deathsPerYear,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
                 }
-            }
-        });
+            });
 
-        // Bar chart for deaths by state
-        const barChart = new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: states,
-                datasets: [{
-                    label: 'Total Deaths by State',
-                    data: deathsByState,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                }]
-            },
-            options: {
-                indexAxis: 'x',
-                scales: { y: { beginAtZero: true } },
-                plugins: {
-                    zoom: {
-                        zoom: {
-                            enabled: true,
-                            mode: 'x', // Enable zoom on x-axis
-                        },
-                        pan: {
-                            enabled: true,
-                            mode: 'x', // Allow panning on x-axis
-                        }
-                    }
+            const barChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: states,
+                    datasets: [{
+                        label: 'Total Deaths by State',
+                        data: deathsByState,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'x',
+                    scales: { y: { beginAtZero: true } }
                 }
-            }
-        });
+            });
+
             // =========================
-        // Chart Modal Functionality
-        // =========================
-        const chartModal = document.getElementById('chart-modal');
-        const closeModal = document.getElementById('close-chart-modal');
-        const modalChartCanvas = document.getElementById('modalChart').getContext('2d');
-        let modalChartInstance;
+            // Chart Modal Functionality
+            // =========================
+            const chartModal = document.getElementById('chart-modal');
+            const closeModal = document.getElementById('close-chart-modal');
+            const modalChartCanvas = document.getElementById('modalChart').getContext('2d');
+            let modalChartInstance;
 
-        // Open modal and load the clicked chart in full screen with zoom enabled
-        document.querySelectorAll('.clickable-chart').forEach(chartElement => {
-            chartElement.addEventListener('click', function () {
+            function openModalWithChart(chartConfig) {
                 chartModal.classList.remove('hidden');
-                const chartConfig = this.id === 'deathsTrendChart' ? lineChart.config : barChart.config;
-
-                // Destroy the existing modal chart if it exists
                 if (modalChartInstance) {
                     modalChartInstance.destroy();
                 }
+                modalChartInstance = new Chart(modalChartCanvas, chartConfig);
+            }
 
-                // Create a new chart instance for the modal with zoom and pan enabled
-                modalChartInstance = new Chart(modalChartCanvas, {
-                    type: chartConfig.type,
-                    data: chartConfig.data,
-                    options: {
-                        ...chartConfig.options,
-                        plugins: {
-                            zoom: {
-                                zoom: {
-                                    enabled: true,
-                                    mode: 'x',
-                                },
-                                pan: {
-                                    enabled: true,
-                                    mode: 'x',
-                                }
-                            }
-                        }
-                    }
+            closeModal.addEventListener('click', () => {
+                chartModal.classList.add('hidden');
+                if (modalChartInstance) {
+                    modalChartInstance.destroy();
+                }
+            });
+
+            document.querySelectorAll('.clickable-chart').forEach(chartElement => {
+                chartElement.addEventListener('click', function() {
+                    const chart = this.id === 'deathsTrendChart' ? lineChart : barChart;
+                    const chartConfig = chart.config;
+                    openModalWithChart(chartConfig);
                 });
             });
-        });
-
-        // Close the chart modal
-        closeModal.addEventListener('click', () => {
-            chartModal.classList.add('hidden');
-            if (modalChartInstance) {
-                modalChartInstance.destroy();
-            }
-        });
 
             // =========================
             // Fetch Top Stories from API and Display
@@ -529,7 +486,7 @@
             function displayTopStories(stories) {
                 const container = document.getElementById('top-stories-container');
                 container.innerHTML = '';
-                const newsStory = stories.news_about_threat_school_shooting;
+                const newsStory = stories.also_in_the_news;
                 if (Array.isArray(newsStory) && newsStory.length > 0) {
                     newsStory.forEach(story => {
                         const card = `
