@@ -21,44 +21,49 @@
             </p>
         </div>
 
-        <!-- Three-column layout: Filters, Table, Charts -->
+        <!-- Three-column layout: -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <!-- First Column: Filters -->
-            <div class="md:col-span-2 mb-6 bg-white p-4 h-fit">
-                <h1 class="text-xl font-semibold mb-2"> Filters </h1>
-                <!-- Filter by Year -->
-                <div class="flex items-center mb-2">
-                    <select id="filter-year" class="border p-1 w-full">
-                        <option value="all">All years</option>
-                    </select>
+            <!-- First Column -->
+            <div class="md:col-span-2">
+                <div class="bg-white p-3 mb-2">
+                    <h1 class="text-xl font-semibold mb-2"> Filters </h1>
+                    <!-- Filter by Year -->
+                    <div class="flex items-center mb-2">
+                        <select id="filter-year" class="border p-1 w-full">
+                            <option value="all">All years</option>
+                        </select>
+                    </div>
+    
+                    <!-- Filter by State -->
+                    <div class="mb-2">
+                        <select id="filter-state" class="border p-1 w-full">
+                            <option value="all">All states</option>
+                        </select>
+                    </div>
+                    <!-- Sort by Date Dropdown -->
+                    <div class="mb-2 gap-2">
+                        <select id="sort-date-select" class="border p-1 w-full">
+                            <option value="latest">Recent</option>
+                            <option value="oldest">Older</option>
+                        </select>
+                    </div>
+                    <!-- Sort Controls -->
+                    <div class="mb-2 gap-2">
+                        <label for="sort-deaths-checkbox">
+                            <input type="checkbox" id="sort-deaths-checkbox" class="mr-1">Sort by death count
+                        </label>
+                    </div>
                 </div>
-
-                <!-- Filter by State -->
-                <div class="mb-2">
-                    <select id="filter-state" class="border p-1 w-full">
-                        <option value="all">All states</option>
-                    </select>
+                <!-- GoFundMe Embed -->
+                <div class="">
+                    <div class="gfm-embed" data-url="https://www.gofundme.com/f/help-the-victims-of-the-apalachee-high-school-shooting/widget/large?sharesheet=CAMPAIGN_PAGE&attribution_id=undefined"></div>
+                    <script defer src="https://www.gofundme.com/static/js/embed.js"></script>
                 </div>
-                <!-- Sort by Date Dropdown -->
-                <div class="mb-2 gap-2">
-                    <select id="sort-date-select" class="border p-1 w-full">
-                        <option value="latest">recent</option>
-                        <option value="oldest">old</option>
-                    </select>
-                </div>
-                <!-- Sort Controls -->
-                <div class="mb-2 gap-2">
-                    <label for="sort-deaths-checkbox">
-                        <input type="checkbox" id="sort-deaths-checkbox" class="mr-1">Sort by death count
-                    </label>
-                </div>
-
-                
             </div>
 
             <!-- Second Column: Table -->
             <div class="md:col-span-7">
-                <h1 id="total-count" class="text-xl font-semibold mb-4">Total </h1>
+                <h1 id="total-count" class="text-md text-gray-600 mb-1"> </h1>
                 <div class="relative">
                     <div class="overflow-auto max-h-[calc(100vh-80px)]">
                         <table class="table-auto w-full text-left bg-white border border-gray-200">
@@ -119,24 +124,32 @@
         </div>
     </div>
 
+    
     <!-- Google Trends Script (Load Once) -->
     <script src="https://ssl.gstatic.com/trends_nrtr/3826_RC01/embed_loader.js"></script> 
     <script>
         // Render both Google Trends widgets
         trends.embed.renderExploreWidgetTo(
             document.getElementById('trends-widget-container'),
-            "RELATED_QUERIES", 
+            "RELATED_QUERIES",
             {
-                "comparisonItem": [{"keyword":"School shooting","geo":"US","time":"now 7-d"}],
+                "comparisonItem": [
+                    {
+                        "keyword": "School shooting",
+                        "geo": "US",
+                        "time": "today 12-m"
+                    }
+                ],
                 "category": 0,
                 "property": ""
             },
             {
-                "exploreQuery":"date=now%207-d&geo=US&q=School%20shooting&hl=en",
-                "guestPath":"https://trends.google.com:443/trends/embed/"
+                "exploreQuery": "geo=US&q=School%20shooting&hl=en&date=today%2012-m",
+                "guestPath": "https://trends.google.com:443/trends/embed/"
             }
         );
 
+        
         trends.embed.renderExploreWidgetTo(
             document.getElementById('trends-widget-container-2'),
             "TIMESERIES", 
@@ -208,12 +221,12 @@
             const tableBody = document.getElementById('data-table');
             const showMoreBtn = document.getElementById('show-more-btn');
             let filteredData = data.slice();
-            let displayedRows = 10;
+            let displayedRows = 12;
             let showMore = true;
 
             function renderTable(filteredData) {
                 tableBody.innerHTML = '';  // Clear the table
-                document.getElementById('total-count').textContent = `Total: ${filteredData.length} records`;
+                document.getElementById('total-count').textContent = `${filteredData.length} records`;
                 const rowsToShow = showMore ? filteredData.slice(0, displayedRows) : filteredData;
 
                 rowsToShow.forEach(row => {
