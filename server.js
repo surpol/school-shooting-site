@@ -2,6 +2,8 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 const { getJson } = require("serpapi");
 
 const app = express();
@@ -19,7 +21,6 @@ const WIKIPEDIA_URLS = [
 
 // Helper function to sanitize data and remove footnotes or non-numeric characters
 function sanitizeField(value) {
-  // Use regex to extract only the first numeric part (if multiple numbers exist)
   const match = value.match(/\d+/);
   return match ? match[0] : '0';
 }
@@ -33,31 +34,25 @@ async function scrapeWikipediaData() {
       const { data } = await axios.get(url);
       const $ = cheerio.load(data);
 
-      // Filter to extract only tables with relevant shooting data
       $('table.wikitable').each((index, table) => {
         const headers = $(table).find('th').map((i, th) => $(th).text().trim()).get();
 
-        // Check if the table contains "Date", "Location", "Deaths" columns (to identify incident data tables)
         if (headers.includes('Date') && headers.includes('Location') && headers.includes('Deaths')) {
-          // Now iterate through rows and extract the data
           $(table).find('tbody tr').each((i, row) => {
             const date = $(row).find('td').first().text().trim();
             const location = $(row).find('td').eq(1).text().trim();
             let deaths, injuries, description;
 
-            // Check if this is the "death toll" page (3rd URL), which has one less column
             if (url.includes('by_death_toll')) {
-              deaths = sanitizeField($(row).find('td').eq(2).text().trim());  // Clean footnotes from deaths
-              injuries = sanitizeField($(row).find('td').eq(3).text().trim());  // Clean footnotes from injuries
-              description = $(row).find('td').eq(4).text().trim();  // Description is in the 4th column for this page
+              deaths = sanitizeField($(row).find('td').eq(2).text().trim());
+              injuries = sanitizeField($(row).find('td').eq(3).text().trim());
+              description = $(row).find('td').eq(4).text().trim();
             } else {
-              // For the other two pages
-              deaths = sanitizeField($(row).find('td').eq(2).text().trim());  // Clean footnotes from deaths
-              injuries = sanitizeField($(row).find('td').eq(3).text().trim());  // Clean footnotes from injuries
-              description = $(row).find('td').eq(5).text().trim();  // Description is in the 5th column for these pages
+              deaths = sanitizeField($(row).find('td').eq(2).text().trim());
+              injuries = sanitizeField($(row).find('td').eq(3).text().trim());
+              description = $(row).find('td').eq(5).text().trim();
             }
-
-            // Ensure we only push meaningful data (filter out "Total" rows or other irrelevant data)
+ 
             if (date && location && deaths && !isNaN(deaths)) {
               allData.push({
                 date,
@@ -87,8 +82,13 @@ app.get('/', async (req, res) => {
 
 // Fetching top stories using SerpApi
 app.get('/api/top-stories', (req, res) => {
+  const apiKey = process.env.TOP_STORIES_API_KEY;
+  console.log("API key:", apiKey);
+  if (!apiKey) {
+    return res.status(500).json({ error: "API key is missing. Please set TOP_STORIES_API_KEY in the environment variables." });
+  }
   getJson({
-    api_key: "299d300446cf633f9b87570cf5a12446ecfcd7f9d507ca5ea04d06ce3a33cdc7",
+    api_key: apiKey,
     engine: "google",
     q: "school shooting",
     location: "United States",
@@ -97,15 +97,13 @@ app.get('/api/top-stories', (req, res) => {
     hl: "en",
     device: "mobile"
   }, (json) => {
-    // Extracting top stories
     const topStories = json.top_stories || [];
     res.json(topStories);
   });
-})
-;
+});
+
 // Start server
 const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
